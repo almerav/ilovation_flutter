@@ -1,0 +1,23 @@
+services:
+  db:
+    container_name: db
+    image: postgres:17.2
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /data/postgres
+      POSTGRES_DB: ilovation
+    volumes:
+      - db:/data/postgres # makes the data persistent
+    ports:
+      - "5435:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d postgres" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  db:
+  
