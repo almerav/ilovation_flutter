@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
@@ -12,7 +13,6 @@ class EventPage extends StatefulWidget {
 
 class _EventPageState extends State<EventPage> {
   int _currentIndex = 0;
-  final TextEditingController _searchController = TextEditingController();
   List<dynamic> _events = [];
 
   @override
@@ -22,8 +22,9 @@ class _EventPageState extends State<EventPage> {
   }
 
   Future<void> fetchEvents() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/events'));
-    
+    final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:3000';
+    final response = await http.get(Uri.parse('$baseUrl/events'));
+
     if (response.statusCode == 200) {
       setState(() {
         _events = jsonDecode(response.body);
@@ -86,15 +87,10 @@ class _EventPageState extends State<EventPage> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            Image.asset(
-              'assets/food_fest.jpg', // Keep the placeholder image
-              width: double.infinity,
-              height: 150,
-              fit: BoxFit.cover,
-            ),
+            _buildEventImage(event['image_url']),
             const SizedBox(height: 10),
             Text(
-              event['name'],
+              event['title'],
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -108,7 +104,7 @@ class _EventPageState extends State<EventPage> {
             ),
             const SizedBox(height: 5),
             Text(
-              '📅 ${event['start_time']} - ${event['end_time']}',
+              '📅 ${event['start_datetime']} - ${event['end_datetime']}',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 13,
@@ -120,5 +116,32 @@ class _EventPageState extends State<EventPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildEventImage(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return Image.asset(
+        'assets/event_placeholder.jpg', // ✅ Use a placeholder if no image is provided
+        width: double.infinity,
+        height: 150,
+        fit: BoxFit.cover,
+      );
+    }
+
+    try {
+      return Image.memory(
+        base64Decode(imageUrl),
+        width: double.infinity,
+        height: 150,
+        fit: BoxFit.cover,
+      );
+    } catch (e) {
+      return Image.asset(
+        'assets/event_placeholder.jpg',
+        width: double.infinity,
+        height: 150,
+        fit: BoxFit.cover,
+      );
+    }
   }
 }

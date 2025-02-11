@@ -3,11 +3,12 @@ require("dotenv").config();
 
 const pool = new Pool({
   user: "postgres",
-  host: "localhost",  // or your server IP if deployed
+  host: "localhost",
   database: "ilovation",
-  password: "postgres",
-  port: 5435, // This should match your docker-compose.yml port
+  password: "root",  // Ensure this matches the updated password
+  port: 5432,
 });
+
 
 pool.connect()
   .then(() => console.log("Connected to PostgreSQL"))
